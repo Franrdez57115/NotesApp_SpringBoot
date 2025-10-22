@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notes_App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .note-card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .icon-btn { background: none; border: none; cursor: pointer; margin-left: 6px; }
+        .icon-btn:hover { opacity: 0.7; }
+        #noteForm { display: none; margin-bottom: 20px; }
+    </style>
+</head>
+<body class="p-4">
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-journal-text"></i>App De Notas</h3>
+        <button class="btn btn-primary" id="addBtn">+ Nueva Nota</button>
+    </div>
+
+    <!-- Formulario oculto -->
+    <div id="noteForm" class="card p-3">
+        <h5 id="formTitle">Nueva Nota</h5>
+        <input type="hidden" id="noteId">
+        <div class="mb-3">
+            <label class="form-label">Titulo</label>
+            <input type="text" class="form-control" id="noteTitle">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-control" rows="4" id="noteDescription"></textarea>
+        </div>
+        <button class="btn btn-success" id="saveNote">Guardar</button>
+        <button class="btn btn-secondary" id="cancelForm">Cancelar</button>
+    </div>
+
+    <!-- Lista de notas -->
+    <div id="notesContainer" class="row">
+        <div class="col-md-4 mb-3" th:each="note : ${notes}" th:id="'note-' + ${note.id}">
+            <div class="note-card">
+                <h5 th:text="${note.title}"></h5>
+                <p th:text="${note.description}"></p>
+                <div class="d-flex justify-content-end">
+                    <a class="icon-btn text-primary" th:href="@{/notes/api/{id}(id=${note.id})}" title="Ver">
+                        👁️
+                    </a>
+                    <button class="icon-btn text-secondary" th:attr="onclick=|editNote(${note.id}, '${note.title}', '${note.description}')|">
+                        ✏️
+                    </button>
+                    <button class="icon-btn text-danger" th:attr="onclick=|deleteNote(${note.id})|">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('noteForm');
+    const addBtn = document.getElementById('addBtn');
+    const cancelBtn = document.getElementById('cancelForm');
+    const saveBtn = document.getElementById('saveNote');
+
+    addBtn.onclick = () => {
+        form.style.display = 'block';
+        document.getElementById('formTitle').innerText = 'New Note';
+        document.getElementById('noteId').value = '';
+        document.getElementById('noteTitle').value = '';
+        document.getElementById('noteDescription').value = '';
+    };
+
+    cancelBtn.onclick = () => form.style.display = 'none';
+
+    saveBtn.onclick = async () => {
+        const id = document.getElementById('noteId').value;
+        const note = {
+            title: document.getElementById('noteTitle').value,
+            description: document.getElementById('noteDescription').value
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/${id}` : '/api';
+
+        const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(note)
+        });
+
+        if (res.ok) location.reload(); // recarga automáticamente
+    };
+
+    // Editar
+    function editNote(id, title, description) {
+        form.style.display = 'block';
+        document.getElementById('formTitle').innerText = 'Edit Note';
+        document.getElementById('noteId').value = id;
+        document.getElementById('noteTitle').value = title;
+        document.getElementById('noteDescription').value = description;
+    }
+
+    // Eliminar
+    async function deleteNote(id) {
+        if (!confirm('¿Eliminar esta nota?')) return;
+        const res = await fetch(`/notes/api/${id}`, { method: 'DELETE' });
+        if (res.ok) location.reload();
+    }
+</script>
+
+</body>
+</html>
