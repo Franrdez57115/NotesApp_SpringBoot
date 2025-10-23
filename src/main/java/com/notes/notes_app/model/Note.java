@@ -14,8 +14,7 @@ public class Note {
     private String description;
     private String autor;
 
-    @Enumerated(EnumType.STRING)
-    private Color color;
+    private String color = "#ffffff";
 
     @Enumerated(EnumType.STRING)
     private State state;
@@ -25,9 +24,6 @@ public class Note {
     @PrePersist
     protected void onCreate() {
         date = LocalDate.now();
-        if (state == null) {
-            state = State.CREADA;
-        }
     }
 
     public Long getId() {
@@ -62,11 +58,11 @@ public class Note {
         this.autor = autor;
     }
 
-    public Color getColor() {
+    public String getColor() {
         return color;
     }
 
-    public void setColor(Color color) {
+    public void setColor(String color) {
         this.color = color;
     }
 

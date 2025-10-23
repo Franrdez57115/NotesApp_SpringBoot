@@ -36,7 +36,9 @@ public class NotesController {
     @PutMapping("/api/{id}")
     @ResponseBody
     public Note updateNote(@PathVariable Long id, @RequestBody Note updatedNote) {
+        Note existing = noteService.findById(id).orElseThrow(() -> new IllegalArgumentException("Nota no encontrada con ID: " + id));
         updatedNote.setId(id);
+        updatedNote.setDate(existing.getDate());
         return noteService.saveNote(updatedNote);
     }
 
