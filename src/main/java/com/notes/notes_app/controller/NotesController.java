@@ -27,13 +27,13 @@ public class NotesController {
           return "index";
     }
 
-    @PostMapping("/api")
+    @PostMapping("/new")
     @ResponseBody
     public Note createNote(@RequestBody Note note) {
         return noteService.saveNote(note);
     }
 
-    @PutMapping("/api/{id}")
+    @PutMapping("/{id}")
     @ResponseBody
     public Note updateNote(@PathVariable Long id, @RequestBody Note updatedNote) {
         Note existing = noteService.findById(id).orElseThrow(() -> new IllegalArgumentException("Nota no encontrada con ID: " + id));
@@ -42,7 +42,7 @@ public class NotesController {
         return noteService.saveNote(updatedNote);
     }
 
-    @DeleteMapping("/api/{id}")
+    @DeleteMapping("/{id}")
     @ResponseBody
     public void deleteNote(@PathVariable Long id) {
         noteService.deleteNote(id);
