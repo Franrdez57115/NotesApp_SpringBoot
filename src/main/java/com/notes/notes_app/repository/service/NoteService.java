@@ -26,18 +26,6 @@ public class NoteService {
         return noteRepository.save(note);
     }
 
-//    public Note modifyNote(Long id, Note noteUpdated) {
-//        Note note = noteRepository.findById(id).orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
-//
-//        note.setTitle(noteUpdated.getTitle());
-//        note.setDescription(noteUpdated.getDescription());
-//        note.setDate(noteUpdated.getDate());
-//        note.setAutor(noteUpdated.getAutor());
-//        note.setColor(noteUpdated.getColor());
-//        note.setState(noteUpdated.getState());
-//        return noteRepository.save(note);
-//    }
-
     public void deleteNote(Long id) {
         if (!noteRepository.existsById(id)) {
             throw new RuntimeException("No existe esta Nota");
