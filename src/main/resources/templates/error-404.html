@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error 404 - Nota no encontrada</title>
+</head>
+<body>
+<h1>Error 404 - Nota no encontrada</h1>
+<p th:text="${errorMessage}"></p>
+<p>Código de estado: <span th:text="${status}"></span></p>
+<p>Fecha y hora: <span th:text="${timestamp}"></span></p>
+<a href="/notes" >Volver al inicio</a>
+</body>
+</html>

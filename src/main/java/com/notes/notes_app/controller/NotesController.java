@@ -1,5 +1,6 @@
 package com.notes.notes_app.controller;
 
+import com.notes.notes_app.exception.NoteNotFoundException;
 import com.notes.notes_app.model.Note;
 import com.notes.notes_app.repository.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class NotesController {
     @PutMapping("/{id}")
     @ResponseBody
     public Note updateNote(@PathVariable Long id, @RequestBody Note updatedNote) {
-        Note existing = noteService.findById(id).orElseThrow(() -> new IllegalArgumentException("Nota no encontrada con ID: " + id));
+        Note existing = noteService.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
         updatedNote.setId(id);
         updatedNote.setDate(existing.getDate());
         return noteService.saveNote(updatedNote);
@@ -51,7 +52,7 @@ public class NotesController {
     @GetMapping("/view/{id}")
     public String viewNote(@PathVariable Long id, Model model) {
         Note note = noteService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nota no encontrada: " + id));
+                .orElseThrow(() -> new NoteNotFoundException(id));
         model.addAttribute("note", note);
         return "view"; // templates/view.html
     }

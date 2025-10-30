@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error 400 - Solicitud Incorrecta</title>
+</head>
+<body>
+<h1>Error 400 - Solicitud Incorrecta</h1>
+<p th:text="${errorMessage}">Ha ocurrido un error en los datos enviados.</p>
+<p>Código de estado: <span th:text="${status}"></span></p>
+<p>Fecha y hora: <span th:text="${timestamp}"></span></p>
+<a href="/" >Volver al inicio</a>
+</body>
+</html>

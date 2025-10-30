@@ -1,5 +1,6 @@
 package com.notes.notes_app.repository.service;
 
+import com.notes.notes_app.exception.InvalidNoteDataException;
 import com.notes.notes_app.model.Note;
 import com.notes.notes_app.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class NoteService {
     }
 
     public Note saveNote(Note note) {
+        if (note.getTitle() == null || note.getTitle().isBlank()) {
+            throw new InvalidNoteDataException("El titulo de la nota no puede estar vacío.");
+        }
         return noteRepository.save(note);
     }
 
