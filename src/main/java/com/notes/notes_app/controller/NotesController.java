@@ -54,7 +54,7 @@ public class NotesController {
         Note note = noteService.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
         model.addAttribute("note", note);
-        return "view"; // templates/view.html
+        return "view";
     }
 
 

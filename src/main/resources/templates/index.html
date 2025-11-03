@@ -1,279 +1,183 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App de Notas</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Mis Notas</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!--Links de Fuentes y Tailwind -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Scripts -->
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
-
-
-
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8685EF",
+                        "primary-hover": "#6c6ae9",
+                        "accent": "#F0B9A8",
+                        "background": "#F9F9FB",
+                        "card": "#FFFFFF",
+                        "text-primary": "#2D3748",
+                        "text-secondary": "#718096",
+                        "icon": "#A0AEC0",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'lifted': '0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    }
+                },
+            },
+        }
+    </script>
     <style>
-        body {
-            background-color: #f7f8fa;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .container {
-            max-width: 1000px;
-        }
-
-        h3 {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        /* Botón principal */
-        #addBtn {
-            border-radius: 10px;
-            font-weight: 500;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        #addBtn:hover {
-            transform: translateY(-2px);
-            background-color: #0d6efd;
-        }
-
-        /* Tarjetas */
-        .note-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-            transition: all 0.2s ease-in-out;
-            height: 100%;
-        }
-
-        .note-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-        }
-
-        .note-card h5 {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .note-card p {
-            color: #555;
-            font-size: 0.95rem;
-            margin-bottom: 0.75rem;
-        }
-
-        /* Botones de iconos */
-        .icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #6c757d;
-            font-size: 1.1rem;
-            transition: all 0.2s ease;
-            margin-left: 8px;
-        }
-
-        .icon-btn:hover {
-            color: #000;
-            transform: scale(1.1);
-        }
-
-        /* Modal */
-        .modal-content {
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            border: none;
-        }
-
-        .modal-header {
-            border-bottom: none;
-        }
-
-        .modal-footer {
-            border-top: none;
-        }
-
-        #saveNote, #cancelForm {
-            border-radius: 8px;
-            padding: 8px 16px;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
         }
     </style>
 </head>
-<body class="p-4">
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3><i class="bi bi-journal-text me-2"></i>App de Notas</h3>
-        <!-- Abre el modal -->
-        <button class="btn btn-primary" id="addBtn" data-bs-toggle="modal" data-bs-target="#noteModal">
-            <i class="bi bi-plus-lg me-1"></i> Nueva Nota
-        </button>
-    </div>
+<body class="font-display bg-background text-text-primary">
+<div class="relative flex min-h-screen w-full flex-col">
+    <div class="layout-container flex h-full grow flex-col">
+        <div class="px-4 sm:px-10 md:px-20 lg:px-40 flex flex-1 justify-center py-5">
+            <div class="layout-content-container flex flex-col w-full max-w-[960px] flex-1">
 
-    <!-- Modal del formulario -->
-    <div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="noteModalLabel"><i class="bi bi-pencil-square me-2"></i>Nueva Nota</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="noteId">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <div class="mb-3">
-                        <label class="form-label">Título</label>
-                        <input type="text" class="form-control" id="noteTitle" required>
-                        <div class="invalid-feedback">El título es obligatorio.</div>
+                <header class="flex items-center justify-between whitespace-nowrap py-5 mb-4">
+                    <div class="flex items-center gap-4">
+                        <h1 class="text-text-primary text-2xl font-bold">Hola, <span class="text-primary">Usuario</span>
+                        </h1>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Descripción</label>
-                        <textarea class="form-control" rows="4" id="noteDescription"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Autor</label>
-                        <input type="text" class="form-control" id="noteAutor" placeholder="Autor">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Estado</label>
-                        <select class="form-select" id="noteState">
-                            <option value="CREADA" selected>Creada</option>
-                            <option value="EN_PROCESO">En Proceso</option>
-                            <option value="HECHA">Hecha</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Color</label>
-                        <input type="color" id="noteColor" value="#ffffff" class="form-control form-control-color">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-success" id="saveNote"><i class="bi bi-check2-circle me-1"></i>Guardar
+                    <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-text-secondary border border-gray-200 hover:bg-gray-100 text-sm font-bold leading-normal tracking-[0.015em]">
+                        <span class="truncate">Cerrar Sesión</span>
                     </button>
-                    <button class="btn btn-secondary" id="cancelForm" data-bs-dismiss="modal"><i
-                            class="bi bi-x-circle me-1"></i>Cancelar
+                </header>
+
+                <div class="flex items-center justify-between px-4 pb-3 pt-5">
+                    <h2 class="text-text-primary text-[22px] font-bold leading-tight tracking-[-0.015em]">Mis Notas</h2>
+                    <button id="addNoteBtn"
+                            class="flex items-center gap-2 min-w-[84px] max-w-[480px] cursor-pointer justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30 hover:bg-primary-hover transition-colors">
+                        <span class="material-symbols-outlined">add</span>
+                        <span class="truncate">Crear Nueva Nota</span>
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Lista de notas -->
-    <div id="notesContainer" class="row g-4">
-        <div class="col-md-4" th:each="note : ${notes}" th:id="'note-' + ${note.id}">
-            <div class="note-card" th:style="'background-color:' + ${note.color}">
-                <h5 th:text="${note.title}">Título</h5>
-                <p th:text="${note.description}">Descripción</p>
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <div class="d-flex justify-content-end">
-                    <a class="icon-btn text-primary" th:href="@{/notes/view/{id}(id=${note.id})}" title="Ver"><i
-                            class="bi bi-eye"></i></a>
-                    <button class="icon-btn text-secondary"
-                            th:data-id="${note.id}"
-                            th:data-title="${note.title}"
-                            th:data-description="${note.description}"
-                            th:data-autor="${note.autor}"
-                            th:data-state="${note.state}"
-                            th:data-color="${note.color}"
-                            onclick="openEditModal(this)"
-                            data-bs-toggle="modal" data-bs-target="#noteModal">
-                        <i class="bi bi-pencil"></i>
-                    </button>
 
-                    <button class="icon-btn text-danger" th:attr="onclick=|deleteNote(${note.id})|">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                <!-- Listado de Notas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                    <div class="flex h-full flex-col items-stretch justify-start rounded-xl shadow-soft bg-card overflow-hidden"
+                         th:each="note : ${notes}" th:id="'note-' + ${note.id}">
+                        <div class="flex w-full grow flex-col items-stretch justify-between p-5 gap-4">
+                            <div>
+                                <h3 class="text-text-primary text-lg font-bold leading-tight"
+                                    th:text="${note.title}"></h3>
+                                <p class="text-text-secondary text-sm font-normal leading-normal mt-2 line-clamp-3"
+                                   th:text="${note.description}"></p>
+                            </div>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div class="flex items-center justify-end gap-1 mt-4">
+                                <a aria-label="Ver nota"
+                                   th:href="@{/notes/view/{id}(id=${note.id})}"
+                                   class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 text-icon transition-colors">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </a>
+
+                                <button aria-label="Editar nota"
+                                        class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 text-icon"
+                                        th:data-id="${note.id}"
+                                        th:data-title="${note.title}"
+                                        th:data-description="${note.description}"
+                                        th:data-autor="${note.autor}"
+                                        th:data-state="${note.state}"
+                                        onclick="openEditModal(this)">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <button aria-label="Eliminar nota"
+                                        class="flex items-center justify-center p-2 rounded-full hover:bg-gray-100 text-icon"
+                                        th:attr="onclick=|deleteNote(${note.id})|">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Formulario Modal para Añadir/Editar Nota -->
+                <div id="noteModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+                    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+                        <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+
+                        <h2 id="modalTitle" class="text-xl font-bold mb-4">Nueva Nota</h2>
+
+                        <input type="hidden" id="noteId">
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Título</label>
+                            <input id="noteTitle" type="text"
+                                   class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Descripción</label>
+                            <textarea id="noteDescription"
+                                      class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                      rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Autor</label>
+                            <input id="noteAutor" type="text"
+                                   class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Estado</label>
+                            <select id="noteState" class="w-full mt-1 border border-gray-300 rounded-lg p-2">
+                                <option value="CREADA">Creada</option>
+                                <option value="EN_PROCESO">En Proceso</option>
+                                <option value="HECHA">Hecha</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Color</label>
+                            <input id="noteColor" type="color"
+                                   class="w-full mt-1 h-10 rounded-lg cursor-pointer border">
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button id="cancelBtn" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancelar
+                            </button>
+                            <button id="saveNoteBtn"
+                                    class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
-<script>
-
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-    const form = document.getElementById('noteForm');
-    const addBtn = document.getElementById('addBtn');
-    const cancelBtn = document.getElementById('cancelForm');
-    const saveBtn = document.getElementById('saveNote');
-
-    addBtn.onclick = () => {
-        document.getElementById('noteModalLabel').innerText = 'Nueva Nota';
-        document.getElementById('noteId').value = '';
-        document.getElementById('noteTitle').value = '';
-        document.getElementById('noteDescription').value = '';
-        document.getElementById('noteAutor').value = '';
-        document.getElementById('noteState').value = 'CREADA';
-        document.getElementById('noteColor').value = '#ffffff';
-
-    };
-
-    cancelBtn.onclick = () => form.style.display = 'none';
-
-    saveBtn.onclick = async () => {
-        const id = document.getElementById('noteId').value;
-        const title = document.getElementById('noteTitle').value.trim();
-
-        if (!title) {
-            alert('El campo "Título" es obligatorio.');
-            document.getElementById('noteTitle').focus();
-            return;
-        }
-
-        const note = {
-            title: title,
-            description: document.getElementById('noteDescription').value,
-            autor: document.getElementById('noteAutor').value,
-            state: document.getElementById('noteState').value,
-            color: document.getElementById('noteColor').value
-        };
-
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/notes/${id}` : `/notes/new`;
-
-        const res = await fetch(url, {
-            method: method,
-            headers: {'Content-Type': 'application/json',
-                       [csrfHeader]: csrfToken},
-            body: JSON.stringify(note)
-        });
-
-        if (res.ok) location.reload();
-    };
-
-    // Editar Nota
-    function openEditModal(button) {
-        document.getElementById('noteModalLabel').innerText = 'Editar Nota';
-
-        document.getElementById('noteId').value = button.dataset.id;
-        document.getElementById('noteTitle').value = button.dataset.title;
-        document.getElementById('noteDescription').value = button.dataset.description;
-        document.getElementById('noteAutor').value = button.dataset.autor;
-        document.getElementById('noteState').value = button.dataset.state;
-        document.getElementById('noteColor').value = button.dataset.color;
-    }
-
-
-    // Eliminar Nota
-    async function deleteNote(id) {
-        if (!confirm('¿Eliminar esta nota?')) return;
-        const res = await fetch(`/notes/${id}`, {method: 'DELETE', headers: {[csrfHeader]: csrfToken }});
-        if (res.ok) location.reload();
-    }
-</script>
-
+<script th:src="@{/js/notes.js}"></script>
 </body>
 </html>

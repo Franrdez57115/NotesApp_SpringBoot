@@ -1,6 +1,7 @@
 package com.notes.notes_app.repository.service;
 
 import com.notes.notes_app.exception.InvalidNoteDataException;
+import com.notes.notes_app.exception.NoteNotFoundException;
 import com.notes.notes_app.model.Note;
 import com.notes.notes_app.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class NoteService {
 
     public void deleteNote(Long id) {
         if (!noteRepository.existsById(id)) {
-            throw new RuntimeException("No existe esta Nota");
+            throw new NoteNotFoundException(id);
         } else {
             noteRepository.deleteById(id);
         }
