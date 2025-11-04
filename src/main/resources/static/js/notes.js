@@ -80,13 +80,41 @@ function openEditModal(button) {
 }
 
 async function deleteNote(id) {
-    if (!confirm('¿Deseas eliminar esta nota?')) return;
+    const modal = document.getElementById('deleteModal');
+    const confirmBtn = document.getElementById('confirmDelete');
+    const cancelBtn = document.getElementById('cancelDelete');
+
+    modal.classList.remove('hidden');
+
+    const confirmed = await new Promise(resolve => {
+        const handleConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        const handleCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        const cleanup = () => {
+            confirmBtn.removeEventListener('click', handleConfirm);
+            cancelBtn.removeEventListener('click', handleCancel);
+            modal.classList.add('hidden');
+        };
+
+        confirmBtn.addEventListener('click', handleConfirm);
+        cancelBtn.addEventListener('click', handleCancel);
+    });
+
+    if (!confirmed) return;
+
     const res = await fetch(`/notes/${id}`, {
         method: 'DELETE',
         headers: { [csrfHeader]: csrfToken }
     });
+
     if (res.ok) location.reload();
 }
+
 
 
 

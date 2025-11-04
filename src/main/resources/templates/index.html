@@ -68,7 +68,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <button type="submit"
                                 class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-text-secondary border border-gray-200 hover:bg-gray-100 text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
-                            <span class="truncate">Cerrar Sesión</span>
+                            <span class="truncate text-red-500">Cerrar Sesión</span>
                         </button>
                     </form>
                 </header>
@@ -87,7 +87,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                     <div class="flex h-full flex-col items-stretch justify-start rounded-xl shadow-soft bg-card overflow-hidden"
                          th:each="note : ${notes}" th:id="'note-' + ${note.id}">
-                        <div class="flex w-full grow flex-col items-stretch justify-between p-5 gap-4">
+                        <div class="flex w-full grow flex-col items-stretch justify-between p-5 gap-4" th:style="'background-color:' + ${note.color}">
                             <div>
                                 <h3 class="text-text-primary text-lg font-bold leading-tight"
                                     th:text="${note.title}"></h3>
@@ -181,6 +181,26 @@
         </div>
     </div>
 </div>
+
+<div id="deleteModal"
+     class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-background-dark rounded-lg shadow-lg w-80 p-6 text-center">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
+            ¿Deseas eliminar esta nota?
+        </h3>
+        <div class="flex justify-center gap-4">
+            <button id="cancelDelete"
+                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 transition">
+                Cancelar
+            </button>
+            <button id="confirmDelete"
+                    class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
 
 <script th:src="@{/js/notes.js}"></script>
 </body>
