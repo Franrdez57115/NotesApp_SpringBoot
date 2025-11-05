@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +37,7 @@ public class TestNoteService {
 
         when (noteRepository.findAll()).thenReturn(notasSimuladas);
 
-        List<Note> notes = noteService.listNotes();
+        List<Note> notes = noteService.listNotesFor();
         assertEquals(2, notes.size());
     }
 
@@ -51,7 +50,7 @@ public class TestNoteService {
 
         when(noteRepository.save(note)).thenReturn(note);
 
-        Note result = noteService.saveNote(note);
+        Note result = noteService.saveNoteFor(note);
 
         assertEquals("Note 1", result.getTitle());
         verify(noteRepository).save(note);
@@ -65,7 +64,7 @@ public class TestNoteService {
         note.setTitle("Nota existente");
 
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
-        Optional<Note> resultado = noteService.findById(1L);
+        Optional<Note> resultado = noteService.findByIdFor(1L);
 
         assertTrue(resultado.isPresent());
         assertEquals("Nota existente", resultado.get().getTitle());
@@ -74,7 +73,7 @@ public class TestNoteService {
     @Test
     void buscarNotaPorId_inexistente() {
         when(noteRepository.findById(2L)).thenReturn(Optional.empty());
-        Optional<Note> resultado = noteService.findById(2L);
+        Optional<Note> resultado = noteService.findByIdFor(2L);
         assertFalse(resultado.isPresent());
     }
 
@@ -83,7 +82,7 @@ public class TestNoteService {
     void eliminarNota_existente() {
         when(noteRepository.existsById(1L)).thenReturn(true);
 
-        noteService.deleteNote(1L);
+        noteService.deleteNoteFor(1L);
 
         verify(noteRepository).existsById(1L);
         verify(noteRepository).deleteById(1L);
@@ -95,7 +94,7 @@ public class TestNoteService {
 
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> noteService.deleteNote(99L)
+                () -> noteService.deleteNoteFor(99L)
         );
 
         assertEquals("No existe esta Nota", exception.getMessage());

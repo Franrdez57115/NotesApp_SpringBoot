@@ -21,6 +21,15 @@ public class Note {
 
     private LocalDate date;
 
+    // Relación
+    // Añado propietario nota. Relación muchos a uno, cada nota pertenece a un AppUser.
+    // Lazy: Para carga perezosa...Al leer una nota, si a priori no necesitas el dueño, la bbdd solo te trae la nota.
+    // Ventajas: rendimiento (menos datos si no necesitas el dueño).
+    // Y por último mapeo la columna FK owner_id en la tala note. Si quisieras obligar a que haya dueño podemos: nullable=false
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private AppUser owner;
+
     @PrePersist
     protected void onCreate() {
         date = LocalDate.now();
@@ -80,5 +89,13 @@ public class Note {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    public AppUser getOwner() {
+        return owner;
+    }
+
+    public void setOwner(AppUser owner) {
+        this.owner = owner;
     }
 }

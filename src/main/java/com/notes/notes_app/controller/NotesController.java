@@ -4,12 +4,10 @@ import com.notes.notes_app.exception.NoteNotFoundException;
 import com.notes.notes_app.model.Note;
 import com.notes.notes_app.repository.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/notes")
@@ -23,35 +21,35 @@ public class NotesController {
     }
 
     @GetMapping
-    public String listNotes(Model model) {
-          model.addAttribute("notes", noteService.listNotes());
+    public String listNotes(Model model, @AuthenticationPrincipal org.springframework.security.core.userdetails.User authUser) {
+          model.addAttribute("notes", noteService.listNotesFor(authUser.getUsername()));
           return "index";
     }
 
     @PostMapping("/new")
     @ResponseBody
-    public Note createNote(@RequestBody Note note) {
-        return noteService.saveNote(note);
+    public Note createNote(@RequestBody Note note, @AuthenticationPrincipal org.springframework.security.core.userdetails.User authUser) {
+        return noteService.saveNoteFor(note, authUser.getUsername());
     }
 
     @PutMapping("/{id}")
     @ResponseBody
-    public Note updateNote(@PathVariable Long id, @RequestBody Note updatedNote) {
-        Note existing = noteService.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+    public Note updateNote(@PathVariable Long id, @RequestBody Note updatedNote, @AuthenticationPrincipal org.springframework.security.core.userdetails.User authUser) {
+        Note existing = noteService.findByIdFor(id, authUser.getUsername()).orElseThrow(() -> new NoteNotFoundException(id));
         updatedNote.setId(id);
         updatedNote.setDate(existing.getDate());
-        return noteService.saveNote(updatedNote);
+        return noteService.saveNoteFor(updatedNote, authUser.getUsername());
     }
 
     @DeleteMapping("/{id}")
     @ResponseBody
-    public void deleteNote(@PathVariable Long id) {
-        noteService.deleteNote(id);
+    public void deleteNote(@PathVariable Long id, @AuthenticationPrincipal org.springframework.security.core.userdetails.User authUser) {
+        noteService.deleteNoteFor(id, authUser.getUsername());
     }
 
     @GetMapping("/view/{id}")
-    public String viewNote(@PathVariable Long id, Model model) {
-        Note note = noteService.findById(id)
+    public String viewNote(@PathVariable Long id, Model model, @AuthenticationPrincipal org.springframework.security.core.userdetails.User authUser) {
+        Note note = noteService.findByIdFor(id, authUser.getUsername())
                 .orElseThrow(() -> new NoteNotFoundException(id));
         model.addAttribute("note", note);
         return "view";
