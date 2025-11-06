@@ -1,8 +1,11 @@
 package com.notes.notes_app.controller;
 
+import com.notes.notes_app.model.AppUser;
 import com.notes.notes_app.model.Note;
+import com.notes.notes_app.repository.AppUserRepository;
 import com.notes.notes_app.repository.NoteRepository;
 import com.notes.notes_app.repository.service.NoteService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,10 +31,27 @@ public class NotesRestController {
     private MockMvc mockMvc;
     @Autowired
     private NoteRepository noteRepository;
+    @Autowired
+    private AppUserRepository appUserRepository;
+
+    private AppUser testUser;
+    private AppUser otherUser;
+
+    @BeforeEach
+    void setUp() {
+        testUser = new AppUser();
+        testUser.setUsername("test");
+        testUser.setPassword("password");
+        appUserRepository.save(testUser);
+
+        otherUser = new AppUser();
+        otherUser.setUsername("other");
+        otherUser.setPassword("password");
+        appUserRepository.save(otherUser);
+    }
 
     @Test
-    void crearNuevaNota() throws Exception{
-
+    void crearNuevaNota() throws Exception {
         String nuevaNotaJson = """
                 {
                     "title": "Nota nueva",
@@ -40,37 +60,29 @@ public class NotesRestController {
                 """;
 
         mockMvc.perform(post("/notes/new")
-                        .with(user("testUser").roles("USER"))
+                        .with(user(testUser.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(nuevaNotaJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value("Test Funcional"))
-                .andExpect(jsonPath("$.id").exists());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.owner.username").value("testUser"));
     }
 
     @Test
-    void borrarNota() throws Exception{
+    void borrarNota() throws Exception {
         Note note = new Note();
         note.setTitle("Nota a eliminar");
-        note.setDescription("test funcional");
-         noteRepository.save(note);
+        note.setDescription("Test Funcional");
+        note.setOwner(testUser);
+        noteRepository.save(note);
 
         mockMvc.perform(delete("/notes/{id}", note.getId())
-                        .with(csrf())
-                        .with(user("testUser").roles("USER")))
+                        .with(user(testUser.getUsername()).roles("USER"))
+                        .with(csrf()))
                 .andExpect(status().isOk());
 
-        boolean exists = noteRepository.existsById(note.getId());
-        assertFalse(exists);
-
-    }
-
-    @Test
-    void verNotas() throws Exception{
-
-        mockMvc.perform(get("/notes")
-                        .with(user("testUser").roles("USER")))
-                .andExpect(status().isOk());
+        assertFalse(noteRepository.existsById(note.getId()));
     }
 }

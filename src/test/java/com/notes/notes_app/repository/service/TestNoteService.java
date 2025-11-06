@@ -1,6 +1,8 @@
 package com.notes.notes_app.repository.service;
 
+import com.notes.notes_app.model.AppUser;
 import com.notes.notes_app.model.Note;
+import com.notes.notes_app.repository.AppUserRepository;
 import com.notes.notes_app.repository.NoteRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,8 +23,13 @@ public class TestNoteService {
     @Mock
     private NoteRepository noteRepository;
 
+    @Mock
+    private AppUserRepository appUserRepository;
+
     @InjectMocks
     private NoteService noteService;
+
+    private final String USERNAME = "usuario1";
 
     // Test unitario de lista devuelta correctamente
     @Test
@@ -35,24 +43,30 @@ public class TestNoteService {
 
         List<Note> notasSimuladas = Arrays.asList(note1, note2);
 
-        when (noteRepository.findAll()).thenReturn(notasSimuladas);
+        when (noteRepository.findByOwnerUsername(USERNAME)).thenReturn(notasSimuladas);
 
-        List<Note> notes = noteService.listNotesFor();
+        List<Note> notes = noteService.listNotesFor(USERNAME);
         assertEquals(2, notes.size());
+        verify(noteRepository).findByOwnerUsername(USERNAME);
     }
 
     // Test unitario de Guardado de notas correctamente
     @Test
     void guardarNota() {
+        AppUser appUser = new AppUser();
+        appUser.setUsername(USERNAME);
+
         Note note = new Note();
         note.setTitle("Note 1");
         note.setDescription("Prueba nota 1");
 
+        when(appUserRepository.findByUsername(USERNAME)).thenReturn(Optional.of(appUser));
         when(noteRepository.save(note)).thenReturn(note);
 
-        Note result = noteService.saveNoteFor(note);
+        Note result = noteService.saveNoteFor(note, USERNAME);
 
         assertEquals("Note 1", result.getTitle());
+        verify(appUserRepository).findByUsername(USERNAME);
         verify(noteRepository).save(note);
     }
 
@@ -63,8 +77,8 @@ public class TestNoteService {
         note.setId(1L);
         note.setTitle("Nota existente");
 
-        when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
-        Optional<Note> resultado = noteService.findByIdFor(1L);
+        when(noteRepository.findByIdAndOwnerUsername(1L, USERNAME)).thenReturn(Optional.of(note));
+        Optional<Note> resultado = noteService.findByIdFor(1L, USERNAME);
 
         assertTrue(resultado.isPresent());
         assertEquals("Nota existente", resultado.get().getTitle());
@@ -72,34 +86,34 @@ public class TestNoteService {
 
     @Test
     void buscarNotaPorId_inexistente() {
-        when(noteRepository.findById(2L)).thenReturn(Optional.empty());
-        Optional<Note> resultado = noteService.findByIdFor(2L);
+        when(noteRepository.findByIdAndOwnerUsername(2L, USERNAME)).thenReturn(Optional.empty());
+        Optional<Note> resultado = noteService.findByIdFor(2L, USERNAME);
         assertFalse(resultado.isPresent());
     }
 
     // Test unitario de eliminar notas existente e inexistente
     @Test
     void eliminarNota_existente() {
-        when(noteRepository.existsById(1L)).thenReturn(true);
+        Note note = new Note();
+        note.setId(1L);
+        note.setTitle("Nota existente");
 
-        noteService.deleteNoteFor(1L);
+        when(noteRepository.findByIdAndOwnerUsername(1L, USERNAME)).thenReturn(Optional.of(note));
 
-        verify(noteRepository).existsById(1L);
-        verify(noteRepository).deleteById(1L);
+        noteService.deleteNoteFor(1L, USERNAME);
+
+        verify(noteRepository).findByIdAndOwnerUsername(1L, USERNAME);
+        verify(noteRepository).delete(note);
     }
 
     @Test
     void eliminarNota_noExistente_debeLanzarExcepcion() {
-        when(noteRepository.existsById(99L)).thenReturn(false);
+        when(noteRepository.findByIdAndOwnerUsername(99L, USERNAME)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> noteService.deleteNoteFor(99L)
-        );
+        assertThrows(NoSuchElementException.class, () -> noteService.deleteNoteFor(99L, USERNAME));
 
-        assertEquals("No existe esta Nota", exception.getMessage());
-        verify(noteRepository).existsById(99L);
-        verify(noteRepository, never()).deleteById(anyLong());
+        verify(noteRepository).findByIdAndOwnerUsername(99L, USERNAME);
+        verify(noteRepository, never()).delete(any());
     }
 
 }
