@@ -4,13 +4,13 @@ import com.notes.notes_app.model.AppUser;
 import com.notes.notes_app.model.Note;
 import com.notes.notes_app.repository.AppUserRepository;
 import com.notes.notes_app.repository.NoteRepository;
-import com.notes.notes_app.repository.service.NoteService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
-public class NotesRestController {
+public class NotesTestController {
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,15 +42,18 @@ public class NotesRestController {
         testUser = new AppUser();
         testUser.setUsername("test");
         testUser.setPassword("password");
+        testUser.setRole("ROLE_USER");
         appUserRepository.save(testUser);
 
         otherUser = new AppUser();
         otherUser.setUsername("other");
         otherUser.setPassword("password");
+        otherUser.setRole("ROLE_USER");
         appUserRepository.save(otherUser);
     }
 
     @Test
+    @WithMockUser(username = "test", roles = "USER")
     void crearNuevaNota() throws Exception {
         String nuevaNotaJson = """
                 {
@@ -60,17 +63,17 @@ public class NotesRestController {
                 """;
 
         mockMvc.perform(post("/notes/new")
-                        .with(user(testUser.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(nuevaNotaJson))
-                .andExpect(status().isOk())
+                .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.description").value("Test Funcional"))
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.owner.username").value("testUser"));
+                .andExpect(jsonPath("$.owner.username").value("test"));
     }
 
     @Test
+    @WithMockUser(username = "test", roles = "USER")
     void borrarNota() throws Exception {
         Note note = new Note();
         note.setTitle("Nota a eliminar");
@@ -79,9 +82,8 @@ public class NotesRestController {
         noteRepository.save(note);
 
         mockMvc.perform(delete("/notes/{id}", note.getId())
-                        .with(user(testUser.getUsername()).roles("USER"))
                         .with(csrf()))
-                .andExpect(status().isOk());
+                .andExpect(status().is2xxSuccessful());
 
         assertFalse(noteRepository.existsById(note.getId()));
     }

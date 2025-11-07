@@ -2,6 +2,7 @@ package com.notes.notes_app.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
@@ -11,8 +12,11 @@ public class Note {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max = 50)
     private String title;
+    @Size(max = 150)
     private String description;
+    @Size(max = 20)
     private String autor;
 
     private String color = "#ffffff";
